@@ -13,13 +13,11 @@ namespace DependencyInjectionTestHelper.Tests.Startups
     public class FailStartup : IStartup
     {
         private readonly IHostingEnvironment _env;
-        private readonly IServiceProvider _serviceProvider;
 
-        public FailStartup(IConfiguration configuration, IHostingEnvironment env, IServiceProvider serviceProvider)
+        public FailStartup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
             _env = env;
-            _serviceProvider = serviceProvider;
         }
 
         public IConfiguration Configuration { get; }
@@ -29,7 +27,7 @@ namespace DependencyInjectionTestHelper.Tests.Startups
             services.AddSingleton<IFailDependentService, FailDependentService>();
             services.Configure<FailSettings>(o => o = null);
 
-            return _serviceProvider;
+            return services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)

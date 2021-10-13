@@ -13,13 +13,11 @@ namespace DependencyInjectionTestHelper.Tests.Startups
     public class SuccessStartup : IStartup
     {
         private readonly IHostingEnvironment _env;
-        private readonly IServiceProvider _serviceProvider;
 
-        public SuccessStartup(IConfiguration configuration, IHostingEnvironment env, IServiceProvider serviceProvider)
+        public SuccessStartup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
             _env = env;
-            _serviceProvider = serviceProvider;
         }
 
         public IConfiguration Configuration { get; }
@@ -30,7 +28,7 @@ namespace DependencyInjectionTestHelper.Tests.Startups
             services.AddSingleton<ISuccessDependentService, SuccessDependentService>();
             services.Configure<SuccessSettings>(x => x = new SuccessSettings());
 
-            return _serviceProvider;
+            return services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)
