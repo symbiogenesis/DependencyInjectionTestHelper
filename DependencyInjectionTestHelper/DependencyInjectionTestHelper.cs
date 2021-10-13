@@ -2,28 +2,98 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace DependencyInjectionTestHelper
 {
-    public static class DependencyInjectionTestHelper
+    public class DependencyInjectionTestHelper
     {
-        public static void TryToResolveAllServices(IServiceCollection serviceCollection)
+        private readonly IServiceCollection _serviceCollection;
+        private readonly IServiceProvider _serviceProvider;
+
+        public DependencyInjectionTestHelper(IWebHostBuilder webHostBuilder)
         {
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            IServiceCollection? serviceCollection = null;
 
-            var descriptors = serviceCollection.Where(d => !d.ServiceType.FullName.StartsWith(nameof(Microsoft)));
+            webHostBuilder.ConfigureServices(sc => serviceCollection = sc).Build();
 
-            foreach (var descriptor in descriptors)
+            if (serviceCollection == null)
+                throw new InvalidOperationException("Service Collection cannot be null");
+
+            _serviceCollection = serviceCollection;
+
+            var startup = _serviceCollection.BuildServiceProvider().GetRequiredService<IStartup>();
+
+            if (startup == null)
+                throw new KeyNotFoundException("Startup class does not inherit from IStartup");
+
+            _ = startup.ConfigureServices(_serviceCollection);
+
+            _serviceProvider = _serviceCollection.BuildServiceProvider(); // have to build it again
+
+            CheckThatReadonlyFieldsAreInitialized(startup, startup.GetType());
+        }
+
+        public void TryToResolveAllServices()
+        {
+            foreach (var descriptor in _serviceCollection.Where(IsNotFromSystemAssembly))
             {
-                var service = serviceProvider.GetRequiredService(descriptor.ServiceType);
+                if (descriptor == null)
+                    continue;
+
+                if (descriptor.ServiceType == null)
+                    throw new InvalidOperationException("Service Type missing");
+
+                var service = _serviceProvider.GetRequiredService(descriptor.ServiceType);
 
                 if (service == null)
-                    throw new InvalidOperationException($"The service {descriptor.ImplementationType?.Name} was not resolved");
+                    throw new InvalidOperationException($"The service {descriptor.ServiceType?.Name} was not resolved");
 
-                CheckThatReadonlyFieldsAreInitialized(service, descriptor.ImplementationType);
+                CheckThatReadonlyFieldsAreInitialized(service, descriptor.ServiceType);
             }
+        }
+
+        public void TryToResolveAllOptions()
+        {
+            var settingsTypes = GetSettingsTypes(_serviceCollection);
+
+            var failed = false;
+
+            foreach (var settingsType in settingsTypes)
+            {
+                var optionsType = typeof(IOptions<>).MakeGenericType(new Type[] { settingsType });
+
+                var options = _serviceProvider.GetRequiredService(optionsType);
+
+                if (options == null)
+                    failed = true;
+
+                var value = optionsType?.GetProperty("Value")?.GetValue(options);
+
+                if (value == null)
+                    failed = true;
+
+                if (failed)
+                    throw new InvalidOperationException($"The setting {settingsType.GetGenericArguments()[0].Name} was not resolved");
+            }
+        }
+
+        private static bool IsNotFromSystemAssembly(ServiceDescriptor d)
+        {
+            var fullName = d?.ServiceType?.FullName;
+
+            if (fullName == null)
+                return false;
+
+            if (fullName.StartsWith(nameof(Microsoft)))
+                return false;
+
+            if (fullName.StartsWith(nameof(System)))
+                return false;
+
+            return true;
         }
 
         private static void CheckThatReadonlyFieldsAreInitialized(object service, Type type)
@@ -31,9 +101,7 @@ namespace DependencyInjectionTestHelper
             if (type == null)
                 return;
 
-            var readonlyFields = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.IsInitOnly);
-
-            foreach(var field in readonlyFields)
+            foreach (var field in GetReadonlyFields(type))
             {
                 bool failed;
 
@@ -55,30 +123,9 @@ namespace DependencyInjectionTestHelper
             }
         }
 
-        public static void TryToResolveAllOptions(IServiceCollection serviceCollection)
+        private static IEnumerable<FieldInfo> GetReadonlyFields(Type type)
         {
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var settingsTypes = GetSettingsTypes(serviceCollection);
-
-            var failed = false;
-
-            foreach (var settingsType in settingsTypes)
-            {
-                var optionsType = typeof(IOptions<>).MakeGenericType(new Type[] { settingsType });
-
-                var options = serviceProvider.GetRequiredService(optionsType);
-
-                if (options == null)
-                    failed = true;
-
-                var value = optionsType.GetProperty("Value").GetValue(options);
-
-                if (value == null)
-                    failed = true;
-
-                if (failed)
-                    throw new InvalidOperationException($"The setting {settingsType.GetGenericArguments()[0].Name} was not resolved");
-            }
+            return type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.IsInitOnly);
         }
 
         private static IEnumerable<Type> GetSettingsTypes(IServiceCollection serviceCollection)

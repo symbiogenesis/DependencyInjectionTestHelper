@@ -1,38 +1,31 @@
-using System;
-using DependencyInjectionTestHelper;
 using DependencyInjectionTestHelper.Tests.Startups;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace DependencyInjectionTestHelper.Tests
 {
     public class SuccessTests
     {
-        private readonly IServiceCollection serviceCollection;
+        private readonly DependencyInjectionTestHelper _helper;
 
         public SuccessTests()
         {
-            var mockConfig = new Mock<IConfiguration>();
+            var webHostBuilder = WebHost.CreateDefaultBuilder(null).UseStartup<SuccessStartup>();
 
-            serviceCollection = new ServiceCollection();
-
-            var startup = new SuccessStartup(mockConfig.Object);
-
-            startup.ConfigureServices(serviceCollection);
+            _helper = new DependencyInjectionTestHelper(webHostBuilder);
         }
 
         [Fact]
         public void TryToResolveAllServices_Succeeds()
         {
-            DependencyInjectionTestHelper.TryToResolveAllServices(serviceCollection);
+            _helper.TryToResolveAllServices();
         }
 
         [Fact]
         public void TryToResolveAllOptions_Succeeds()
         {
-            DependencyInjectionTestHelper.TryToResolveAllOptions(serviceCollection);
+            _helper.TryToResolveAllOptions();
         }
     }
 }

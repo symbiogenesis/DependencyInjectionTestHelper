@@ -6,28 +6,36 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System;
 
 namespace DependencyInjectionTestHelper.Tests.Startups
 {
-    public class SuccessStartup
+    public class SuccessStartup : IStartup
     {
-        public SuccessStartup(IConfiguration configuration)
+        private readonly IHostingEnvironment _env;
+        private readonly IServiceProvider _serviceProvider;
+
+        public SuccessStartup(IConfiguration configuration, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
             Configuration = configuration;
+            _env = env;
+            _serviceProvider = serviceProvider;
         }
 
         public IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISuccessService, SuccessService>();
             services.AddSingleton<ISuccessDependentService, SuccessDependentService>();
             services.AddSingleton<IOptions<SuccessSettings>>(x => Options.Create(new SuccessSettings()));
+
+            return _serviceProvider;
         }
-    
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+
+        public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
