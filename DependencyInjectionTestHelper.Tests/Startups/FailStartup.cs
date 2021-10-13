@@ -27,7 +27,7 @@ namespace DependencyInjectionTestHelper.Tests.Startups
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IFailDependentService, FailDependentService>();
-            services.AddSingleton<IOptions<FailSettings>>(_ => null);
+            services.Configure<FailSettings>(o => o = null);
 
             return _serviceProvider;
         }

@@ -28,7 +28,7 @@ namespace DependencyInjectionTestHelper.Tests.Startups
         {
             services.AddSingleton<ISuccessService, SuccessService>();
             services.AddSingleton<ISuccessDependentService, SuccessDependentService>();
-            services.AddSingleton<IOptions<SuccessSettings>>(x => Options.Create(new SuccessSettings()));
+            services.Configure<SuccessSettings>(x => x = new SuccessSettings());
 
             return _serviceProvider;
         }
