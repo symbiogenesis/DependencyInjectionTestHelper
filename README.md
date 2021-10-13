@@ -7,36 +7,32 @@ Ever see errors like this?
 
 Convert those pesky DI runtime errors into simple test failures, so that you can catch them before they are released into production. 
 
-**Note**: This should work for the vast majority of ASP.NET Core projects, where dependencies are all simply registered in the Startup.cs file. But it won't work easily if you are doing anything fancier.
+**Note**: This should work for the vast majority of ASP.NET Core projects, where dependencies are all simply registered in the Startup.cs file upon application startup. But it won't work easily if you are doing anything fancier.
 
 Example usage:
 
 ```csharp
     public class DependencyInjectionTests
     {
-        private readonly IServiceCollection serviceCollection;
+        private readonly DependencyInjectionTestHelper _helper;
 
         public DependencyInjectionTests()
         {
-            var config = GetConfiguration();
+            var webHostBuilder = Program.CreateWebHostBuilder(null);
 
-            serviceCollection = new ServiceCollection();
-
-            var startup = new Startup(config);
-
-            startup.ConfigureServices(serviceCollection);
+            _helper = new DependencyInjectionTestHelper(webHostBuilder);
         }
 
         [Fact]
         public void TryToResolveAllServices_Succeeds()
         {
-            DependencyInjectionTestHelper.TryToResolveAllServices(serviceCollection);
+            _helper.TryToResolveAllServices();
         }
         
         [Fact]
         public void TryToResolveAllOptions_Succeeds()
         {
-            DependencyInjectionTestHelper.TryToResolveAllOptions(serviceCollection);
+            _helper.TryToResolveAllOptions();
         }
     }
 ```
