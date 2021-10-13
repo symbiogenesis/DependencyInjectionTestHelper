@@ -30,11 +30,5 @@ Example usage:
         {
             _helper.TryToResolveAllServices();
         }
-        
-        [Fact]
-        public void TryToResolveAllOptions_Succeeds()
-        {
-            _helper.TryToResolveAllOptions();
-        }
     }
 ```
