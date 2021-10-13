@@ -82,7 +82,12 @@ namespace DependencyInjectionTestHelper
 
         private static bool IsNotFromSystemAssembly(ServiceDescriptor d)
         {
-            var fullName = d?.ServiceType?.FullName;
+            return IsNotFromSystemAssembly(d?.ServiceType);
+        }
+
+        private static bool IsNotFromSystemAssembly(Type? type)
+        {
+            var fullName = type?.FullName;
 
             if (fullName == null)
                 return false;
@@ -130,26 +135,10 @@ namespace DependencyInjectionTestHelper
 
         private static IEnumerable<Type> GetSettingsTypes(IServiceCollection serviceCollection)
         {
-            foreach (var service in serviceCollection)
-            {
-                var serviceType = service.ServiceType;
-
-                if (!serviceType.IsGenericType)
-                    continue;
-
-                if (!serviceType.Name.StartsWith("IOptions"))
-                    continue;
-
-                if (IsAssignableFromGenericType(serviceType, typeof(IConfigureOptions<>)))
-                    continue;
-
-                var settingsType = service.ServiceType.GetGenericArguments()[0];
-
-                if (settingsType.FullName == null)
-                    continue;
-
-                yield return settingsType;
-            }
+            return serviceCollection
+                .Where(s => IsAssignableFromGenericType(s.ServiceType, typeof(IConfigureOptions<>)))
+                .Select(s => s.ServiceType.GetGenericArguments()[0])
+                .Where(IsNotFromSystemAssembly);
         }
 
         public static bool IsAssignableFromGenericType(Type givenType, Type genericType)
