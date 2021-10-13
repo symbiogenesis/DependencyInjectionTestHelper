@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace DependencyInjectionTestHelper
 {
@@ -52,31 +51,6 @@ namespace DependencyInjectionTestHelper
                     throw new InvalidOperationException($"The service {descriptor.ServiceType?.Name} was not resolved");
 
                 CheckThatReadonlyFieldsAreInitialized(service, descriptor.ServiceType);
-            }
-        }
-
-        public void TryToResolveAllOptions()
-        {
-            var settingsTypes = GetSettingsTypes(_serviceCollection);
-
-            var failed = false;
-
-            foreach (var settingsType in settingsTypes)
-            {
-                var optionsType = typeof(IOptions<>).MakeGenericType(new Type[] { settingsType });
-
-                var options = _serviceProvider.GetRequiredService(optionsType);
-
-                if (options == null)
-                    failed = true;
-
-                var value = optionsType?.GetProperty("Value")?.GetValue(options);
-
-                if (value == null)
-                    failed = true;
-
-                if (failed)
-                    throw new InvalidOperationException($"The setting {settingsType.GetGenericArguments()[0].Name} was not resolved");
             }
         }
 
@@ -131,14 +105,6 @@ namespace DependencyInjectionTestHelper
         private static IEnumerable<FieldInfo> GetReadonlyFields(Type type)
         {
             return type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.IsInitOnly);
-        }
-
-        private static IEnumerable<Type> GetSettingsTypes(IServiceCollection serviceCollection)
-        {
-            return serviceCollection
-                .Where(s => IsAssignableFromGenericType(s.ServiceType, typeof(IConfigureOptions<>)))
-                .Select(s => s.ServiceType.GetGenericArguments()[0])
-                .Where(IsNotFromSystemAssembly);
         }
 
         public static bool IsAssignableFromGenericType(Type givenType, Type genericType)

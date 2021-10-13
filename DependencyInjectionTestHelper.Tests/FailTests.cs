@@ -1,11 +1,7 @@
 using System;
-using DependencyInjectionTestHelper;
 using DependencyInjectionTestHelper.Tests.Startups;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Xunit;
 
 namespace DependencyInjectionTestHelper.Tests
@@ -25,12 +21,6 @@ namespace DependencyInjectionTestHelper.Tests
         public void TryToResolveAllServices_Fails()
         {
             Assert.Throws<InvalidOperationException>(() => _helper.TryToResolveAllServices());
-        }
-
-        [Fact]
-        public void TryToResolveAllOptions_Fails()
-        {
-            Assert.Throws<InvalidOperationException>(() => _helper.TryToResolveAllOptions());
         }
     }
 }
