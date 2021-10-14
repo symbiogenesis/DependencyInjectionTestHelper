@@ -26,7 +26,7 @@ namespace DependencyInjectionTestHelper
             var startup = _serviceCollection.BuildServiceProvider().GetRequiredService<IStartup>();
 
             if (startup == null)
-                throw new KeyNotFoundException("Startup class does not inherit from IStartup");
+                throw new KeyNotFoundException("Startup class cannot be resolved.");
 
             _ = startup.ConfigureServices(_serviceCollection);
 
