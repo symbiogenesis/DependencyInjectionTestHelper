@@ -45,7 +45,17 @@ namespace DependencyInjectionTestHelper
                 if (descriptor.ServiceType == null)
                     throw new InvalidOperationException("Service Type missing");
 
-                var service = _serviceProvider.GetRequiredService(descriptor.ServiceType);
+                object service;
+
+                if (descriptor.Lifetime == ServiceLifetime.Scoped)
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    service = scope.ServiceProvider.GetRequiredService(descriptor.ServiceType);
+                }
+                else
+                {
+                    service = _serviceProvider.GetRequiredService(descriptor.ServiceType);
+                }
 
                 if (service == null)
                     throw new InvalidOperationException($"The service {descriptor.ServiceType?.Name} was not resolved");
