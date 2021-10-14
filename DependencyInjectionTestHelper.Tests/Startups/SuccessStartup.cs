@@ -24,7 +24,7 @@ namespace DependencyInjectionTestHelper.Tests.Startups
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISuccessService, SuccessService>();
-            services.AddSingleton<ISuccessDependentService, SuccessDependentService>();
+            services.AddScoped<ISuccessDependentService, SuccessDependentService>();
         }
 
         public void Configure(IApplicationBuilder app)
