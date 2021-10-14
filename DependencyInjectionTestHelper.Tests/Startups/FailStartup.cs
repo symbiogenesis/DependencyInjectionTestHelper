@@ -8,7 +8,7 @@ using System;
 
 namespace DependencyInjectionTestHelper.Tests.Startups
 {
-    public class FailStartup : IStartup
+    public class FailStartup
     {
         private readonly IHostingEnvironment _env;
 
@@ -20,18 +20,16 @@ namespace DependencyInjectionTestHelper.Tests.Startups
 
         public IConfiguration Configuration { get; }
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IFailDependentService, FailDependentService>();
-
-            return services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)
         {
             if (_env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                Console.WriteLine("Configuring...");
             }
         }
     }
