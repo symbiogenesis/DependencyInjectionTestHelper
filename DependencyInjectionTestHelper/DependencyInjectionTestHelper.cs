@@ -28,9 +28,7 @@ namespace DependencyInjectionTestHelper
             if (startup == null)
                 throw new InvalidOperationException("Startup class cannot be resolved.");
 
-            _ = startup.ConfigureServices(_serviceCollection);
-
-            _serviceProvider = _serviceCollection.BuildServiceProvider(); // have to build it again
+            _serviceProvider = startup.ConfigureServices(_serviceCollection);
 
             CheckThatReadonlyFieldsAreInitialized(startup, startup.GetType());
         }
