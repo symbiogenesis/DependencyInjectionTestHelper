@@ -47,14 +47,14 @@ namespace DependencyInjectionTestHelper
 
                 object service;
 
-                if (descriptor.Lifetime == ServiceLifetime.Scoped)
+                if (descriptor.Lifetime == ServiceLifetime.Singleton)
                 {
-                    using var scope = _serviceProvider.CreateScope();
-                    service = scope.ServiceProvider.GetRequiredService(descriptor.ServiceType);
+                    service = _serviceProvider.GetRequiredService(descriptor.ServiceType);
                 }
                 else
                 {
-                    service = _serviceProvider.GetRequiredService(descriptor.ServiceType);
+                    using var scope = _serviceProvider.CreateScope();
+                    service = scope.ServiceProvider.GetRequiredService(descriptor.ServiceType);
                 }
 
                 if (service == null)
