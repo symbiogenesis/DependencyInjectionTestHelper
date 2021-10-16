@@ -43,22 +43,24 @@ namespace DependencyInjectionTestHelper
                 if (descriptor.ServiceType == null)
                     throw new InvalidOperationException("Service Type missing");
 
+                var serviceType = descriptor.ServiceType;
+
                 object service;
 
                 if (descriptor.Lifetime == ServiceLifetime.Singleton)
                 {
-                    service = _serviceProvider.GetRequiredService(descriptor.ServiceType);
+                    service = _serviceProvider.GetRequiredService(serviceType);
                 }
                 else
                 {
                     using var scope = _serviceProvider.CreateScope();
-                    service = scope.ServiceProvider.GetRequiredService(descriptor.ServiceType);
+                    service = scope.ServiceProvider.GetRequiredService(serviceType);
                 }
 
                 if (service == null)
-                    throw new InvalidOperationException($"The service {descriptor.ServiceType?.Name} was not resolved");
+                    throw new InvalidOperationException($"The service {serviceType.Name} was not resolved");
 
-                CheckThatReadonlyFieldsAreInitialized(service, descriptor.ServiceType);
+                CheckThatReadonlyFieldsAreInitialized(service, serviceType);
             }
         }
 
