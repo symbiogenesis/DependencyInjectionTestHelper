@@ -138,18 +138,18 @@ namespace DependencyInjectionTestHelper
 
         private static IEnumerable<MemberInfo> GetReadonlyMembers(Type type)
         {
-            var readonlyFields = type.GetFields().Where(f => f.IsInitOnly);
-            var readonlyProperties = type.GetProperties();
-
             var members = new List<MemberInfo>();
+
+            var readonlyFields = type.GetFields().Where(f => f.IsInitOnly);
+
             members.AddRange(readonlyFields);
 
-            foreach (var readonlyProperty in readonlyProperties)
+            foreach (var property in type.GetProperties())
             {
-                var accessors = readonlyProperty.GetAccessors();
+                var accessors = property.GetAccessors();
                 if (accessors.Length < 2)
                 {
-                    members.Add(readonlyProperty);
+                    members.Add(property);
                 }
             }
 
