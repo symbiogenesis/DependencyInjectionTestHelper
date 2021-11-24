@@ -30,7 +30,7 @@ namespace DependencyInjectionTestHelper
 
             _serviceProvider = startup.ConfigureServices(_serviceCollection);
 
-            CheckThatReadonlyFieldsAreInitialized(startup, startup.GetType());
+            CheckThatReadonlyMembersAreInitialized(startup, startup.GetType());
         }
 
         public void TryToResolveAllServices()
@@ -60,7 +60,7 @@ namespace DependencyInjectionTestHelper
                 if (service == null)
                     throw new InvalidOperationException($"The service {serviceType.Name} was not resolved");
 
-                CheckThatReadonlyFieldsAreInitialized(service, serviceType);
+                CheckThatReadonlyMembersAreInitialized(service, serviceType);
             }
         }
 
@@ -85,19 +85,43 @@ namespace DependencyInjectionTestHelper
             return true;
         }
 
-        private static void CheckThatReadonlyFieldsAreInitialized(object service, Type type)
+        private static void CheckThatReadonlyMembersAreInitialized(object service, Type type)
         {
             if (type == null)
                 return;
 
-            foreach (var field in GetReadonlyFields(type))
+            foreach (var member in GetReadonlyMembers(type))
             {
                 bool failed;
 
+                var memberType = "unknown member";
+
                 try
                 {
-                    var fieldValue = field.GetValue(service);
-                    failed = fieldValue == null;
+                    switch (member)
+                    {
+                        case FieldInfo field:
+                            {
+                                var fieldValue = field.GetValue(service);
+                                failed = fieldValue == null;
+                                memberType = nameof(field);
+                                break;
+                            }
+
+                        case PropertyInfo property:
+                            {
+                                var propertyValue = property.GetValue(service);
+                                failed = propertyValue == null;
+                                memberType = nameof(property);
+                                break;
+                            }
+
+                        default:
+                            {
+                                failed = true;
+                                break;
+                            }
+                    }
                 }
                 catch
                 {
@@ -106,15 +130,30 @@ namespace DependencyInjectionTestHelper
 
                 if (failed)
                 {
-                    var errorMessage = $"The field {field.Name} for service {type.Name} was not resolved";
+                    var errorMessage = $"The {memberType} {member.Name} for service {type.Name} was not resolved";
                     throw new InvalidOperationException(errorMessage);
                 }
             }
         }
 
-        private static IEnumerable<FieldInfo> GetReadonlyFields(Type type)
+        private static IEnumerable<MemberInfo> GetReadonlyMembers(Type type)
         {
-            return type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.IsInitOnly);
+            var readonlyFields = type.GetFields().Where(f => f.IsInitOnly);
+            var readonlyProperties = type.GetProperties();
+
+            var members = new List<MemberInfo>();
+            members.AddRange(readonlyFields);
+
+            foreach (var readonlyProperty in readonlyProperties)
+            {
+                var accessors = readonlyProperty.GetAccessors();
+                if (accessors.Length < 2)
+                {
+                    members.Add(readonlyProperty);
+                }
+            }
+
+            return members;
         }
 
         public static bool IsAssignableFromGenericType(Type givenType, Type genericType)
