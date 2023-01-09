@@ -74,10 +74,7 @@ public class DependencyInjectionTestHelper
         }
     }
 
-    private static bool IsNotFromSystemAssembly(ServiceDescriptor d)
-    {
-        return IsNotFromSystemAssembly(d?.ServiceType);
-    }
+    private static bool IsNotFromSystemAssembly(ServiceDescriptor d) => IsNotFromSystemAssembly(d?.ServiceType);
 
     private static bool IsNotFromSystemAssembly(Type? type)
     {
