@@ -144,11 +144,11 @@ public class DependencyInjectionTestHelper
     {
         var members = new List<MemberInfo>();
 
-        var readonlyFields = type.GetFields().Where(f => f.IsInitOnly);
+        var readonlyFields = type.GetFields().Where(f => f.IsInitOnly && f.DeclaringType == type);
 
         members.AddRange(readonlyFields);
 
-        foreach (var property in type.GetProperties())
+        foreach (var property in type.GetProperties().Where(p => p.DeclaringType == type))
         {
             var accessors = property.GetAccessors();
             if (accessors.Length < 2)
