@@ -12,6 +12,12 @@ public class DependencyInjectionTestHelper
     private readonly IServiceCollection serviceCollection;
     private readonly IServiceProvider serviceProvider;
 
+    public DependencyInjectionTestHelper(IServiceCollection serviceCollection, IServiceProvider serviceProvider)
+    {
+        this.serviceCollection = serviceCollection;
+        this.serviceProvider = serviceProvider;
+    }
+
     public DependencyInjectionTestHelper(IWebHostBuilder webHostBuilder)
     {
         IServiceCollection? serviceCollection = null;
