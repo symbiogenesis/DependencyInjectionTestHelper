@@ -16,7 +16,7 @@ public class DependencyInjectionTestHelper
     {
         IServiceCollection? serviceCollection = null;
 
-        webHostBuilder.ConfigureServices(sc => serviceCollection = sc).Build();
+        _ = webHostBuilder.ConfigureServices(sc => serviceCollection = sc).Build();
 
         if (serviceCollection == null)
         {
