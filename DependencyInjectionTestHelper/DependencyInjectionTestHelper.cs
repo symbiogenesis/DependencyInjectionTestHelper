@@ -43,9 +43,16 @@ public class DependencyInjectionTestHelper
         CheckThatReadonlyMembersAreInitialized(startup, startup.GetType());
     }
 
-    public void TryToResolveAllServices()
+    public IEnumerable<ServiceDescriptor> GetValidServiceTypes(Type[] ignoredTypes)
     {
-        foreach (var descriptor in this.serviceCollection.Where(IsNotFromSystemAssembly))
+        var services = this.serviceCollection.Where(IsNotFromSystemAssembly);
+
+        return services.Where(t => !ignoredTypes.Contains(t.ServiceType));
+    }
+
+    public void TryToResolveAllServices(params Type[] ignoredTypes)
+    {
+        foreach (var descriptor in this.GetValidServiceTypes(ignoredTypes))
         {
             if (descriptor == null)
             {
