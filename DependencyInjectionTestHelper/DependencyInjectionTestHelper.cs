@@ -101,26 +101,18 @@ public class DependencyInjectionTestHelper
                 switch (member)
                 {
                     case FieldInfo field:
-                        {
-                            var fieldValue = field.GetValue(service);
-                            failed = fieldValue == null;
-                            memberType = nameof(field);
-                            break;
-                        }
-
+                        var fieldValue = field.GetValue(service);
+                        failed = fieldValue == null;
+                        memberType = nameof(field);
+                        break;
                     case PropertyInfo property:
-                        {
-                            var propertyValue = property.GetValue(service);
-                            failed = propertyValue == null;
-                            memberType = nameof(property);
-                            break;
-                        }
-
+                        var propertyValue = property.GetValue(service);
+                        failed = propertyValue == null;
+                        memberType = nameof(property);
+                        break;
                     default:
-                        {
-                            failed = true;
-                            break;
-                        }
+                        failed = true;
+                        break;
                 }
             }
             catch
