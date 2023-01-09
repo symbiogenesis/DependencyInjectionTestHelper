@@ -39,7 +39,7 @@ public class DependencyInjectionTestHelper
 
     public void TryToResolveAllServices()
     {
-        foreach (var descriptor in serviceCollection.Where(IsNotFromSystemAssembly))
+        foreach (var descriptor in this.serviceCollection.Where(IsNotFromSystemAssembly))
         {
             if (descriptor == null)
             {
@@ -57,11 +57,11 @@ public class DependencyInjectionTestHelper
 
             if (descriptor.Lifetime == ServiceLifetime.Singleton)
             {
-                service = serviceProvider.GetRequiredService(serviceType);
+                service = this.serviceProvider.GetRequiredService(serviceType);
             }
             else
             {
-                using var scope = serviceProvider.CreateScope();
+                using var scope = this.serviceProvider.CreateScope();
                 service = scope.ServiceProvider.GetRequiredService(serviceType);
             }
 
