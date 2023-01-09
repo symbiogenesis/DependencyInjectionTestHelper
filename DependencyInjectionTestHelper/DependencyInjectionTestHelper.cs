@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class DependencyInjectionTestHelper
 {
-    private readonly IServiceCollection _serviceCollection;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceCollection serviceCollection;
+    private readonly IServiceProvider serviceProvider;
 
     public DependencyInjectionTestHelper(IWebHostBuilder webHostBuilder)
     {
@@ -21,21 +21,21 @@ public class DependencyInjectionTestHelper
         if (serviceCollection == null)
             throw new InvalidOperationException("Service Collection cannot be null");
 
-        _serviceCollection = serviceCollection;
+        this.serviceCollection = serviceCollection;
 
-        var startup = _serviceCollection.BuildServiceProvider().GetRequiredService<IStartup>();
+        var startup = serviceCollection.BuildServiceProvider().GetRequiredService<IStartup>();
 
         if (startup == null)
             throw new InvalidOperationException("Startup class cannot be resolved.");
 
-        _serviceProvider = startup.ConfigureServices(_serviceCollection);
+        this.serviceProvider = startup.ConfigureServices(this.serviceCollection);
 
         CheckThatReadonlyMembersAreInitialized(startup, startup.GetType());
     }
 
     public void TryToResolveAllServices()
     {
-        foreach (var descriptor in _serviceCollection.Where(IsNotFromSystemAssembly))
+        foreach (var descriptor in serviceCollection.Where(IsNotFromSystemAssembly))
         {
             if (descriptor == null)
                 continue;
@@ -49,11 +49,11 @@ public class DependencyInjectionTestHelper
 
             if (descriptor.Lifetime == ServiceLifetime.Singleton)
             {
-                service = _serviceProvider.GetRequiredService(serviceType);
+                service = serviceProvider.GetRequiredService(serviceType);
             }
             else
             {
-                using var scope = _serviceProvider.CreateScope();
+                using var scope = serviceProvider.CreateScope();
                 service = scope.ServiceProvider.GetRequiredService(serviceType);
             }
 
