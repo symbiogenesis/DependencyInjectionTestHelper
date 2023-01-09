@@ -19,14 +19,18 @@ public class DependencyInjectionTestHelper
         webHostBuilder.ConfigureServices(sc => serviceCollection = sc).Build();
 
         if (serviceCollection == null)
+        {
             throw new InvalidOperationException("Service Collection cannot be null");
+        }
 
         this.serviceCollection = serviceCollection;
 
         var startup = serviceCollection.BuildServiceProvider().GetRequiredService<IStartup>();
 
         if (startup == null)
+        {
             throw new InvalidOperationException("Startup class cannot be resolved.");
+        }
 
         this.serviceProvider = startup.ConfigureServices(this.serviceCollection);
 
@@ -38,10 +42,14 @@ public class DependencyInjectionTestHelper
         foreach (var descriptor in serviceCollection.Where(IsNotFromSystemAssembly))
         {
             if (descriptor == null)
+            {
                 continue;
+            }
 
             if (descriptor.ServiceType == null)
+            {
                 throw new InvalidOperationException("Service Type missing");
+            }
 
             var serviceType = descriptor.ServiceType;
 
@@ -58,7 +66,9 @@ public class DependencyInjectionTestHelper
             }
 
             if (service == null)
+            {
                 throw new InvalidOperationException($"The service {serviceType.Name} was not resolved");
+            }
 
             CheckThatReadonlyMembersAreInitialized(service, serviceType);
         }
@@ -74,13 +84,19 @@ public class DependencyInjectionTestHelper
         var fullName = type?.FullName;
 
         if (fullName == null)
+        {
             return false;
+        }
 
         if (fullName.StartsWith(nameof(Microsoft)))
+        {
             return false;
+        }
 
         if (fullName.StartsWith(nameof(System)))
+        {
             return false;
+        }
 
         return true;
     }
@@ -88,7 +104,9 @@ public class DependencyInjectionTestHelper
     private static void CheckThatReadonlyMembersAreInitialized(object service, Type type)
     {
         if (type == null)
+        {
             return;
+        }
 
         foreach (var member in GetReadonlyMembers(type))
         {
@@ -153,16 +171,22 @@ public class DependencyInjectionTestHelper
         foreach (var it in givenType.GetInterfaces())
         {
             if (it.IsGenericType && it.GetGenericTypeDefinition() == genericType)
+            {
                 return true;
+            }
         }
 
         if (givenType.IsGenericType && givenType.GetGenericTypeDefinition() == genericType)
+        {
             return true;
+        }
 
         var baseType = givenType.BaseType;
 
         if (baseType == null)
+        {
             return false;
+        }
 
         return IsAssignableFromGenericType(baseType, genericType);
     }
