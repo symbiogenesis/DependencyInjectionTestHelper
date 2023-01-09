@@ -107,31 +107,28 @@ public class DependencyInjectionTestHelper
 
         foreach (var member in GetReadonlyMembers(type))
         {
+            string memberType;
             bool failed;
-
-            var memberType = "unknown member";
 
             try
             {
                 switch (member)
                 {
                     case FieldInfo field:
-                        var fieldValue = field.GetValue(service);
-                        failed = fieldValue == null;
                         memberType = nameof(field);
+                        failed = field.GetValue(service) == null;
                         break;
                     case PropertyInfo property:
-                        var propertyValue = property.GetValue(service);
-                        failed = propertyValue == null;
                         memberType = nameof(property);
+                        failed = property.GetMethod?.IsVirtual != true && property.GetValue(service) == null;
                         break;
                     default:
-                        failed = true;
-                        break;
+                        throw new NotImplementedException();
                 }
             }
             catch
             {
+                memberType = "unknown member";
                 failed = true;
             }
 
