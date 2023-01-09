@@ -9,22 +9,24 @@ using System;
 
 namespace DependencyInjectionTestHelper.Tests.Startups
 {
-    public class SuccessStartup
+    public class SuccessStartup : IStartup
     {
         private readonly IWebHostEnvironment _env;
 
-        public SuccessStartup(IConfiguration configuration, IWebHostEnvironment env)
+        public SuccessStartup(IWebHostEnvironment env, IConfiguration configuration)
         {
-            Configuration = configuration;
             _env = env;
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ISuccessService, SuccessService>();
             services.AddScoped<ISuccessDependentService, SuccessDependentService>();
+
+            return services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)

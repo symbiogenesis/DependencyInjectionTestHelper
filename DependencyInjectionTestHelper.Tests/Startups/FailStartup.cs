@@ -6,10 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Text;
 
 namespace DependencyInjectionTestHelper.Tests.Startups
 {
-    public class FailStartup
+    public class FailStartup : IStartup
     {
         private readonly IWebHostEnvironment _env;
 
@@ -21,9 +22,11 @@ namespace DependencyInjectionTestHelper.Tests.Startups
 
         public IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IFailDependentService, FailDependentService>();
+
+            return services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)
